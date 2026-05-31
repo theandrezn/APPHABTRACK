@@ -51,20 +51,29 @@ export function AuthGate({ children, onSessionChange }: AuthGateProps) {
       })
 
       if (signupError) {
-        setError(
-          signupError.message.includes('non-2xx status code')
-            ? 'Cadastro seguro indisponível no momento. Publique a função habit-game-signup no Supabase.'
-            : signupError.message,
-        )
-        setIsLoading(false)
-        return
+        if (!signupError.message.includes('non-2xx status code')) {
+          setError(signupError.message)
+          setIsLoading(false)
+          return
+        }
+
+        const { error: fallbackSignupError } = await supabase.auth.signUp(credentials)
+        if (fallbackSignupError) {
+          setError(fallbackSignupError.message)
+          setIsLoading(false)
+          return
+        }
       }
     }
 
     const { error: authError } = await supabase.auth.signInWithPassword(credentials)
 
     if (authError) {
-      setError(authError.message === 'Email not confirmed' ? 'Conta criada. Tente entrar novamente agora.' : authError.message)
+      setError(
+        authError.message === 'Email not confirmed'
+          ? 'A confirmação de e-mail ainda está ativa no Supabase. Publique a função habit-game-signup ou desative a confirmação no painel.'
+          : authError.message,
+      )
       setIsLoading(false)
       return
     }
