@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import {
   BadgeDollarSign,
   Bookmark,
@@ -25,6 +25,8 @@ import {
   X,
 } from 'lucide-react'
 import type { AddOn, AddOnCategory } from '../types/addon'
+import { supabase } from '../lib/supabase'
+import { buildCheckoutUrl } from '../utils/stripeCheckout'
 import { Button } from './Button'
 
 const addOns: AddOn[] = [
@@ -39,7 +41,6 @@ const addOns: AddOn[] = [
 ]
 
 const categories: AddOnCategory[] = ['Planners', 'Productivity', 'Wellness', 'Finance']
-const OWNED_KEY = 'habit-game:add-ons:v1'
 const categoryIcons = {
   Planners: Hand,
   Productivity: UserRound,
@@ -47,28 +48,56 @@ const categoryIcons = {
   Finance: Settings,
 } satisfies Record<AddOnCategory, AddOn['icon']>
 
-function loadOwned() {
-  try {
-    return JSON.parse(window.localStorage.getItem(OWNED_KEY) ?? '[]') as string[]
-  } catch {
-    return []
-  }
-}
-
 export function AppMenuBar() {
   const [openCategory, setOpenCategory] = useState<AddOnCategory | null>(null)
   const [selected, setSelected] = useState<AddOn | null>(null)
-  const [owned, setOwned] = useState<string[]>(loadOwned)
+  const [owned, setOwned] = useState<string[]>([])
+  const [currentUser, setCurrentUser] = useState<Awaited<ReturnType<typeof supabase.auth.getUser>>['data']['user']>(null)
+  const [purchaseStatus, setPurchaseStatus] = useState('')
 
-  const addModule = (addOn: AddOn) => {
-    const next = owned.includes(addOn.id) ? owned : [...owned, addOn.id]
-    setOwned(next)
-    window.localStorage.setItem(OWNED_KEY, JSON.stringify(next))
-  }
+  const refreshPurchases = useCallback(async () => {
+    const { data: userData } = await supabase.auth.getUser()
+    setCurrentUser(userData.user)
+    if (!userData.user) {
+      setOwned([])
+      return
+    }
+
+    const { data, error } = await supabase
+      .from('habit_game_addon_purchases')
+      .select('addon_id')
+      .eq('status', 'paid')
+      .eq('user_id', userData.user.id)
+
+    if (!error) {
+      setOwned((data ?? []).map((row) => row.addon_id))
+    }
+  }, [])
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      refreshPurchases()
+    }, 0)
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') refreshPurchases()
+    }
+    window.addEventListener('focus', refreshPurchases)
+    document.addEventListener('visibilitychange', handleVisibility)
+    return () => {
+      window.clearTimeout(timer)
+      window.removeEventListener('focus', refreshPurchases)
+      document.removeEventListener('visibilitychange', handleVisibility)
+    }
+  }, [refreshPurchases])
 
   const openCheckout = (addOn: AddOn) => {
-    addModule(addOn)
-    window.open(addOn.paymentLink, '_blank', 'noopener,noreferrer')
+    if (!currentUser) {
+      setPurchaseStatus('Sign in before checkout so Stripe can unlock this add-on on your account.')
+      return
+    }
+
+    window.open(buildCheckoutUrl(addOn, currentUser), '_blank', 'noopener,noreferrer')
+    setPurchaseStatus('Checkout opened. After payment, return here and your access will refresh automatically.')
     setSelected(null)
   }
 
@@ -119,7 +148,7 @@ export function AppMenuBar() {
                       <Icon size={16} />
                       <span>
                         <strong>{item.name}</strong>
-                        <small>{isOwned ? 'Checkout link opened' : `Stripe checkout - $${item.price.toFixed(2)}`}</small>
+                        <small>{isOwned ? 'Unlocked on your account' : `Stripe checkout - $${item.price.toFixed(2)}`}</small>
                       </span>
                       {isOwned && <Check className="menubar-check" size={15} />}
                     </button>
@@ -135,6 +164,12 @@ export function AppMenuBar() {
           <span>{addOns.length}</span>
         </button>
       </nav>
+      {purchaseStatus && (
+        <div className="purchase-toast" role="status">
+          <span>{purchaseStatus}</span>
+          <button type="button" onClick={() => setPurchaseStatus('')}>Dismiss</button>
+        </div>
+      )}
 
       {selected && (
         <div className="modal-backdrop" role="presentation">
@@ -165,11 +200,12 @@ export function AppMenuBar() {
               <div className="addon-price-card">
                 <small>Order bump</small>
                 <strong>${selected.price.toFixed(2)}</strong>
-                <span>Instant checkout link</span>
+                <span>{owned.includes(selected.id) ? 'Access unlocked' : 'Unlocks after webhook'}</span>
               </div>
             </div>
             <div className="addon-actions">
               <Button onClick={() => setSelected(null)}>Not now</Button>
+              <Button onClick={refreshPurchases}>Refresh Access</Button>
               <Button
                 tone="lime"
                 onClick={() => openCheckout(selected)}

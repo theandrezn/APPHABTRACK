@@ -41,3 +41,27 @@ npm run dev
 npm run build
 npm run lint
 ```
+
+## Stripe Webhook Unlock Flow
+
+Order bumps use Stripe Payment Links. The app appends `client_reference_id={supabaseUserId}_{addonId}` and `prefilled_email` before opening checkout. Stripe sends `client_reference_id` back on `checkout.session.completed`, and the Supabase Edge Function `stripe-webhook` writes the paid add-on to `public.habit_game_addon_purchases`.
+
+Webhook endpoint:
+
+```text
+https://rbsrgfaqmpoidudpsqyd.supabase.co/functions/v1/stripe-webhook
+```
+
+Stripe event to subscribe:
+
+```text
+checkout.session.completed
+```
+
+Required Supabase Edge Function secret:
+
+```text
+STRIPE_WEBHOOK_SECRET=whsec_...
+```
+
+The table has RLS enabled, so authenticated users can only read add-ons unlocked for their own `auth.uid()`.
