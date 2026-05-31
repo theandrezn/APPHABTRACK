@@ -488,22 +488,16 @@ button:disabled {
 
 .auth-brand {
   display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 24px;
-  color: var(--lime);
-  font-weight: 700;
+  justify-content: center;
+  margin: -4px 0 22px;
 }
 
-.auth-brand div {
-  width: 48px;
-  height: 48px;
-  display: grid;
-  place-items: center;
-  color: #071006;
-  background: linear-gradient(180deg, #d9ff77, #8bea25);
-  border-radius: 15px;
-  box-shadow: 0 0 28px rgba(139, 234, 37, 0.28);
+.auth-brand img {
+  width: min(230px, 72%);
+  height: auto;
+  display: block;
+  object-fit: contain;
+  filter: drop-shadow(0 12px 28px rgba(0, 0, 0, 0.4));
 }
 
 .auth-copy span {
@@ -579,8 +573,7 @@ button:disabled {
   color: rgba(201, 209, 217, 0.56);
 }
 
-.auth-error,
-.auth-message {
+.auth-error {
   margin: 0;
   padding: 10px 12px;
   font-size: 0.78rem;
@@ -592,12 +585,6 @@ button:disabled {
   color: #ffd2d2;
   background: rgba(255, 100, 100, 0.12);
   border: 1px solid rgba(255, 100, 100, 0.3);
-}
-
-.auth-message {
-  color: #e7ffd3;
-  background: rgba(139, 234, 37, 0.1);
-  border: 1px solid rgba(139, 234, 37, 0.28);
 }
 
 .auth-submit {

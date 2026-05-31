@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent, type PropsWithChildren } from 'react'
 import type { Session } from '@supabase/supabase-js'
-import { LockKeyhole, Mail, ShieldCheck, Sparkles } from 'lucide-react'
+import { LockKeyhole, Mail, ShieldCheck } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 
 type AuthMode = 'sign-in' | 'sign-up'
@@ -11,7 +11,6 @@ export function AuthGate({ children }: PropsWithChildren) {
   const [password, setPassword] = useState('')
   const [mode, setMode] = useState<AuthMode>('sign-in')
   const [isLoading, setIsLoading] = useState(true)
-  const [message, setMessage] = useState('')
   const [error, setError] = useState('')
 
   useEffect(() => {
@@ -37,7 +36,6 @@ export function AuthGate({ children }: PropsWithChildren) {
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     setError('')
-    setMessage('')
     setIsLoading(true)
 
     const credentials = { email: email.trim(), password }
@@ -52,9 +50,6 @@ export function AuthGate({ children }: PropsWithChildren) {
       return
     }
 
-    if (mode === 'sign-up') {
-      setMessage('Account created. If confirmation is enabled, check your email before signing in.')
-    }
     setIsLoading(false)
   }
 
@@ -87,39 +82,38 @@ export function AuthGate({ children }: PropsWithChildren) {
     <main className="auth-screen">
       <section className="auth-card" aria-labelledby="auth-title">
         <div className="auth-brand">
-          <div><Sparkles size={26} /></div>
-          <span>Habit Game</span>
+          <img src="/habtrack-logo.png" alt="HabTrack" />
         </div>
         <div className="auth-copy">
-          <span>Secure dashboard access</span>
-          <h1 id="auth-title">{mode === 'sign-in' ? 'Welcome back' : 'Create your account'}</h1>
-          <p>Sign in to protect your habit dashboard, order bumps, and month-by-month progress.</p>
+          <span>Acesso seguro ao dashboard</span>
+          <h1 id="auth-title">{mode === 'sign-in' ? 'Bem-vindo de volta' : 'Crie sua conta'}</h1>
+          <p>Faça login para proteger seu painel de hábitos, seus pedidos adicionais e seu progresso mês a mês.</p>
         </div>
 
         <form className="auth-form" onSubmit={handleSubmit}>
           <label>
-            Email
+            E-mail
             <span>
               <Mail size={16} />
               <input
                 type="email"
                 value={email}
                 autoComplete="email"
-                placeholder="you@example.com"
+                placeholder="contato@exemplo.com"
                 required
                 onChange={(event) => setEmail(event.target.value)}
               />
             </span>
           </label>
           <label>
-            Password
+            Senha
             <span>
               <LockKeyhole size={16} />
               <input
                 type="password"
                 value={password}
                 autoComplete={mode === 'sign-in' ? 'current-password' : 'new-password'}
-                placeholder="At least 6 characters"
+                placeholder="Pelo menos 6 caracteres"
                 minLength={6}
                 required
                 onChange={(event) => setPassword(event.target.value)}
@@ -128,10 +122,9 @@ export function AuthGate({ children }: PropsWithChildren) {
           </label>
 
           {error && <p className="auth-error" role="alert">{error}</p>}
-          {message && <p className="auth-message" role="status">{message}</p>}
 
           <button className="auth-submit" type="submit" disabled={isLoading}>
-            {isLoading ? 'Working...' : mode === 'sign-in' ? 'Sign in' : 'Create account'}
+            {isLoading ? 'Carregando...' : mode === 'sign-in' ? 'Iniciar sessão' : 'Criar uma conta'}
           </button>
         </form>
 
@@ -141,10 +134,9 @@ export function AuthGate({ children }: PropsWithChildren) {
           onClick={() => {
             setMode((current) => current === 'sign-in' ? 'sign-up' : 'sign-in')
             setError('')
-            setMessage('')
           }}
         >
-          {mode === 'sign-in' ? 'Need an account? Create one' : 'Already have an account? Sign in'}
+          {mode === 'sign-in' ? 'Precisa de uma conta? Criar uma' : 'Já tem uma conta? Iniciar sessão'}
         </button>
       </section>
     </main>
