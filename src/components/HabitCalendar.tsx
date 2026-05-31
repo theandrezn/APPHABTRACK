@@ -19,7 +19,7 @@ export function HabitCalendar({ data, onToggleCompletion, onManageHabits }: Habi
       <div
         className="habit-grid"
         style={{
-          gridTemplateColumns: `210px repeat(${days.length}, minmax(38px, 1fr))`,
+          gridTemplateColumns: `170px repeat(${days.length}, minmax(31px, 1fr))`,
         }}
       >
         <HabitWeekHeader year={data.year} month={data.month} groups={groups} onManageHabits={onManageHabits} />

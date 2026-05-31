@@ -13,7 +13,7 @@ export function SleepHoursRow({ data, onUpdateSleep }: SleepHoursRowProps) {
     <section className="sleep-row-shell" aria-label="Hours of Sleep">
       <div
         className="sleep-row"
-        style={{ gridTemplateColumns: `210px repeat(${days.length}, minmax(38px, 1fr))` }}
+        style={{ gridTemplateColumns: `170px repeat(${days.length}, minmax(31px, 1fr))` }}
       >
         <div className="sleep-label">Hours of Sleep</div>
         {days.map((day) => {

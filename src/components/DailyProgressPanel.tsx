@@ -11,7 +11,7 @@ export function DailyProgressPanel({ data, dailyCounts }: DailyProgressPanelProp
     <section className="daily-panel" aria-label="Daily Progress">
       <div
         className="daily-grid"
-        style={{ gridTemplateColumns: `210px repeat(${dailyCounts.length}, minmax(38px, 1fr))` }}
+        style={{ gridTemplateColumns: `170px repeat(${dailyCounts.length}, minmax(31px, 1fr))` }}
       >
         <div className="daily-label top">Habit Count</div>
         {dailyCounts.map((item) => (
