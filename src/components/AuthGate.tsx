@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent, type PropsWithChildren } from 'react'
+﻿import { useEffect, useState, type FormEvent, type PropsWithChildren } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { LockKeyhole, Mail, ShieldCheck } from 'lucide-react'
 import { supabase } from '../lib/supabase'

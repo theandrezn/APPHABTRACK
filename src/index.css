@@ -489,15 +489,15 @@ button:disabled {
 .auth-brand {
   display: flex;
   justify-content: center;
-  margin: -4px 0 22px;
+  margin: -16px 0 10px;
 }
 
 .auth-brand img {
-  width: min(230px, 72%);
+  width: min(280px, 82%);
   height: auto;
   display: block;
   object-fit: contain;
-  filter: drop-shadow(0 12px 28px rgba(0, 0, 0, 0.4));
+  filter: drop-shadow(0 14px 24px rgba(0, 0, 0, 0.46));
 }
 
 .auth-copy span {
