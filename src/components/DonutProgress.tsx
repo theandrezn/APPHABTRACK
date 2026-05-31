@@ -1,8 +1,12 @@
+import { useEffect, useRef, useState } from 'react'
+
 type DonutProgressProps = {
   value: number
 }
 
 export function DonutProgress({ value }: DonutProgressProps) {
+  const [isSpinning, setIsSpinning] = useState(false)
+  const previousValueRef = useRef(value)
   const safeValue = Math.min(100, Math.max(0, value))
   const radius = 74
   const center = 95
@@ -12,8 +16,27 @@ export function DonutProgress({ value }: DonutProgressProps) {
   const markerX = center + Math.cos(angle) * radius
   const markerY = center + Math.sin(angle) * radius
 
+  useEffect(() => {
+    if (previousValueRef.current === value) return
+
+    previousValueRef.current = value
+    setIsSpinning(false)
+
+    const startFrame = window.requestAnimationFrame(() => {
+      setIsSpinning(true)
+    })
+    const timer = window.setTimeout(() => {
+      setIsSpinning(false)
+    }, 920)
+
+    return () => {
+      window.cancelAnimationFrame(startFrame)
+      window.clearTimeout(timer)
+    }
+  }, [value])
+
   return (
-    <div className="donut-wrap">
+    <div className={`donut-wrap ${isSpinning ? 'is-spinning' : ''}`}>
       <svg viewBox="0 0 190 190" role="img" aria-label={`Completed ${safeValue.toFixed(2)} percent`}>
         <defs>
           <linearGradient id="donutGradient" x1="22" x2="166" y1="152" y2="28" gradientUnits="userSpaceOnUse">
