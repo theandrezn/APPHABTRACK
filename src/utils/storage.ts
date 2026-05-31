@@ -19,8 +19,9 @@ export const defaultHabits: Habit[] = [
 const februarySleep = [5, 7, 8, 3, 7.5, 6, 8, 6, 7, 8, 5, 6, 7, 7.5, 8, 5, 6, 7, 8, 7, 6, 7, 7, 6, 7, 7, 8, 6]
 const exampleHabitCounts = [18, 19, 20, 22, 21, 19, 18, 22, 23, 22]
 
-function getStorageKey(year: number, month: number) {
-  return `${STORAGE_PREFIX}:${year}-${String(month + 1).padStart(2, '0')}`
+function getStorageKey(year: number, month: number, ownerId?: string | null) {
+  const monthKey = `${year}-${String(month + 1).padStart(2, '0')}`
+  return ownerId ? `${STORAGE_PREFIX}:${ownerId}:${monthKey}` : `${STORAGE_PREFIX}:${monthKey}`
 }
 
 export function createMonthData(year: number, month: number, habits: Habit[] = defaultHabits): MonthData {
@@ -63,12 +64,12 @@ export function seedExampleData(): MonthData {
   return data
 }
 
-export function saveToLocalStorage(data: MonthData) {
-  window.localStorage.setItem(getStorageKey(data.year, data.month), JSON.stringify(data))
+export function saveToLocalStorage(data: MonthData, ownerId?: string | null) {
+  window.localStorage.setItem(getStorageKey(data.year, data.month, ownerId), JSON.stringify(data))
 }
 
-export function loadFromLocalStorage(year: number, month: number): MonthData | null {
-  const raw = window.localStorage.getItem(getStorageKey(year, month))
+export function loadFromLocalStorage(year: number, month: number, ownerId?: string | null): MonthData | null {
+  const raw = window.localStorage.getItem(getStorageKey(year, month, ownerId))
   if (!raw) return null
 
   try {

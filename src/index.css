@@ -564,13 +564,31 @@ button:disabled {
   color: #fff;
   font-size: 1rem;
   font-weight: 500;
-  background: transparent;
+  background: transparent !important;
   border: 0;
   outline: none;
+  appearance: none;
+  caret-color: var(--lime);
 }
 
 .auth-form input::placeholder {
   color: rgba(201, 209, 217, 0.56);
+}
+
+.auth-form input::selection {
+  color: #fff;
+  background: rgba(139, 234, 37, 0.32);
+}
+
+.auth-form input:-webkit-autofill,
+.auth-form input:-webkit-autofill:hover,
+.auth-form input:-webkit-autofill:focus,
+.auth-form input:-webkit-autofill:active {
+  -webkit-text-fill-color: #fff !important;
+  caret-color: var(--lime);
+  box-shadow: 0 0 0 1000px #030608 inset !important;
+  border-radius: 0;
+  transition: background-color 9999s ease-out;
 }
 
 .auth-error {

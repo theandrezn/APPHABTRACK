@@ -4,8 +4,11 @@ import { LockKeyhole, Mail, ShieldCheck } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 
 type AuthMode = 'sign-in' | 'sign-up'
+type AuthGateProps = PropsWithChildren<{
+  onSessionChange?: (session: Session | null) => void
+}>
 
-export function AuthGate({ children }: PropsWithChildren) {
+export function AuthGate({ children, onSessionChange }: AuthGateProps) {
   const [session, setSession] = useState<Session | null>(null)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -19,11 +22,13 @@ export function AuthGate({ children }: PropsWithChildren) {
     supabase.auth.getSession().then(({ data }) => {
       if (!isMounted) return
       setSession(data.session)
+      onSessionChange?.(data.session)
       setIsLoading(false)
     })
 
     const { data: authListener } = supabase.auth.onAuthStateChange((_event, nextSession) => {
       setSession(nextSession)
+      onSessionChange?.(nextSession)
       setIsLoading(false)
     })
 
@@ -31,7 +36,7 @@ export function AuthGate({ children }: PropsWithChildren) {
       isMounted = false
       authListener.subscription.unsubscribe()
     }
-  }, [])
+  }, [onSessionChange])
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -39,13 +44,27 @@ export function AuthGate({ children }: PropsWithChildren) {
     setIsLoading(true)
 
     const credentials = { email: email.trim(), password }
-    const { error: authError } =
-      mode === 'sign-in'
-        ? await supabase.auth.signInWithPassword(credentials)
-        : await supabase.auth.signUp(credentials)
+
+    if (mode === 'sign-up') {
+      const { error: signupError } = await supabase.functions.invoke('habit-game-signup', {
+        body: credentials,
+      })
+
+      if (signupError) {
+        setError(
+          signupError.message.includes('non-2xx status code')
+            ? 'Cadastro seguro indisponível no momento. Publique a função habit-game-signup no Supabase.'
+            : signupError.message,
+        )
+        setIsLoading(false)
+        return
+      }
+    }
+
+    const { error: authError } = await supabase.auth.signInWithPassword(credentials)
 
     if (authError) {
-      setError(authError.message)
+      setError(authError.message === 'Email not confirmed' ? 'Conta criada. Tente entrar novamente agora.' : authError.message)
       setIsLoading(false)
       return
     }

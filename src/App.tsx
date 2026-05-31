@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import type { Session } from '@supabase/supabase-js'
 import { DashboardLayout } from './components/DashboardLayout'
 import { AuthGate } from './components/AuthGate'
 import { AppMenuBar } from './components/AppMenuBar'
@@ -36,14 +37,32 @@ type ConfirmState = {
 } | null
 
 function App() {
-  const [data, setData] = useState<MonthData>(() => loadFromLocalStorage(2026, 1) ?? seedExampleData())
+  const [authSession, setAuthSession] = useState<Session | null>(null)
+  const [dataOwnerId, setDataOwnerId] = useState<string | null>(null)
+  const [data, setData] = useState<MonthData>(() => createMonthData(2026, 1))
   const [isManageOpen, setIsManageOpen] = useState(false)
   const [confirmState, setConfirmState] = useState<ConfirmState>(null)
   const importInputRef = useRef<HTMLInputElement>(null)
+  const ownerId = authSession?.user.id ?? null
 
   useEffect(() => {
-    saveToLocalStorage(data)
-  }, [data])
+    queueMicrotask(() => {
+      if (!ownerId) {
+        setData(createMonthData(2026, 1))
+        setDataOwnerId(null)
+        return
+      }
+
+      setData((current) => loadFromLocalStorage(current.year, current.month, ownerId) ?? createMonthData(current.year, current.month, current.habits))
+      setDataOwnerId(ownerId)
+    })
+  }, [ownerId])
+
+  useEffect(() => {
+    if (ownerId && dataOwnerId === ownerId) {
+      saveToLocalStorage(data, ownerId)
+    }
+  }, [data, dataOwnerId, ownerId])
 
   const activeHabits = useMemo(() => data.habits.filter((habit) => habit.active), [data.habits])
   const daysInMonth = getDaysInMonth(data.year, data.month)
@@ -51,8 +70,8 @@ function App() {
   const monthlyProgress = calculateMonthlyProgress(data)
 
   const loadMonth = useCallback((nextYear: number, nextMonth: number) => {
-    setData((current) => loadFromLocalStorage(nextYear, nextMonth) ?? createMonthData(nextYear, nextMonth, current.habits))
-  }, [])
+    setData((current) => loadFromLocalStorage(nextYear, nextMonth, ownerId) ?? createMonthData(nextYear, nextMonth, current.habits))
+  }, [ownerId])
 
   const toggleCompletion = useCallback((day: number, habitId: string) => {
     setData((current) => {
@@ -155,7 +174,7 @@ function App() {
   )
 
   return (
-    <AuthGate>
+    <AuthGate onSessionChange={setAuthSession}>
       <DashboardLayout
         menu={<AppMenuBar />}
         header={
