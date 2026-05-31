@@ -1,4 +1,4 @@
-import { Download, RefreshCw, Settings2, Upload, WandSparkles } from 'lucide-react'
+import { CircleCheck, Download, RefreshCw, Settings2, TrendingUp, Upload, WandSparkles } from 'lucide-react'
 import { Button } from './Button'
 import { MonthSelector } from './MonthSelector'
 import { ProgressBar } from './ProgressBar'
@@ -39,11 +39,24 @@ export function HeaderStats({
         <MonthSelector year={year} month={month} onYearChange={onYearChange} onMonthChange={onMonthChange} />
       </div>
 
-      <StatCard label="Monthly Progress %" value={`${progress.toFixed(2)}%`} />
-      <StatCard label="Completed Habits" value={completedHabits} />
+      <StatCard
+        label="Monthly Progress %"
+        value={`${progress.toFixed(2)}%`}
+        subLabel="vs last month 0%"
+        icon={<TrendingUp size={27} />}
+      />
+      <StatCard
+        label="Completed Habits"
+        value={completedHabits}
+        subLabel="vs last month 0"
+        icon={<CircleCheck size={27} />}
+      />
 
       <div className="header-progress">
-        <span>Progress:</span>
+        <div>
+          <span>Progress</span>
+          <strong>{progress.toFixed(2)}%</strong>
+        </div>
         <ProgressBar value={progress} label="Monthly progress" />
       </div>
 

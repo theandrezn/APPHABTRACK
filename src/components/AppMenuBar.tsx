@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import {
   BadgeDollarSign,
   Bookmark,
+  CalendarDays,
   Check,
   ChevronDown,
   ClipboardCheck,
@@ -12,6 +13,7 @@ import {
   Hand,
   HeartPulse,
   Home,
+  LogOut,
   ListTodo,
   MapPinned,
   Plane,
@@ -104,9 +106,24 @@ export function AppMenuBar() {
   return (
     <>
       <nav className="app-menubar" aria-label="Habit Game modules">
+        <div className="menubar-brand" aria-label="Habit Game">
+          <img src="/habtrack-logo.png" alt="" />
+        </div>
         <button className="menubar-icon menubar-home is-active" type="button" aria-label="Dashboard">
           <Home size={16} />
           <span>Dashboard</span>
+        </button>
+        <button className="menubar-icon" type="button" aria-label="Habits" onClick={() => setSelected(addOns[1])}>
+          <ClipboardCheck size={17} />
+          <span>Habits</span>
+        </button>
+        <button className="menubar-icon" type="button" aria-label="Analytics" onClick={() => setSelected(addOns[6])}>
+          <Gauge size={17} />
+          <span>Analytics</span>
+        </button>
+        <button className="menubar-icon" type="button" aria-label="Calendar" onClick={() => setSelected(addOns[0])}>
+          <CalendarDays size={17} />
+          <span>Calendar</span>
         </button>
         <button className="menubar-icon" type="button" aria-label="Search add-ons" onClick={() => setSelected(addOns[0])}>
           <Search size={17} />
@@ -162,6 +179,16 @@ export function AppMenuBar() {
           <BadgeDollarSign size={17} />
           <span>Add-ons</span>
           <span>{addOns.length}</span>
+        </button>
+        <div className="menubar-spacer" />
+        <div className="streak-widget">
+          <span>Streaks</span>
+          <strong>12</strong>
+          <small>days</small>
+        </div>
+        <button className="menubar-icon menubar-logout" type="button" aria-label="Logout shortcut">
+          <LogOut size={18} />
+          <span>Exit</span>
         </button>
       </nav>
       {purchaseStatus && (
