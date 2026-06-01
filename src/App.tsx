@@ -11,7 +11,9 @@ import { SleepTrackerChart } from './components/SleepTrackerChart'
 import { Sidebar } from './components/Sidebar'
 import { ManageHabitsModal } from './components/ManageHabitsModal'
 import { ConfirmDialog } from './components/ConfirmDialog'
+import { AddonsWorkspace } from './components/premium/AddonsWorkspace'
 import type { Habit, MonthData } from './types/habit'
+import type { AppView } from './types/navigation'
 import {
   calculateCompletedHabits,
   calculateDailyHabitCount,
@@ -42,6 +44,7 @@ function App() {
   const [data, setData] = useState<MonthData>(() => createMonthData(2026, 1))
   const [isManageOpen, setIsManageOpen] = useState(false)
   const [confirmState, setConfirmState] = useState<ConfirmState>(null)
+  const [activeView, setActiveView] = useState<AppView>('dashboard')
   const importInputRef = useRef<HTMLInputElement>(null)
   const ownerId = authSession?.user.id ?? null
 
@@ -176,7 +179,8 @@ function App() {
   return (
     <AuthGate onSessionChange={setAuthSession}>
       <DashboardLayout
-        menu={<AppMenuBar />}
+        workspace={activeView !== 'dashboard'}
+        menu={<AppMenuBar activeView={activeView} onNavigate={setActiveView} />}
         header={
           <HeaderStats
             year={data.year}
@@ -193,12 +197,16 @@ function App() {
           />
         }
         main={
-          <>
-            <HabitCalendar data={data} onToggleCompletion={toggleCompletion} onManageHabits={() => setIsManageOpen(true)} />
-            <SleepHoursRow data={data} onUpdateSleep={updateSleep} />
-            <DailyProgressPanel data={data} dailyCounts={dailyCounts} />
-            <SleepTrackerChart data={data} onUpdateSleep={updateSleep} />
-          </>
+          activeView === 'dashboard' ? (
+            <>
+              <HabitCalendar data={data} onToggleCompletion={toggleCompletion} onManageHabits={() => setIsManageOpen(true)} />
+              <SleepHoursRow data={data} onUpdateSleep={updateSleep} />
+              <DailyProgressPanel data={data} dailyCounts={dailyCounts} />
+              <SleepTrackerChart data={data} onUpdateSleep={updateSleep} />
+            </>
+          ) : (
+            <AddonsWorkspace ownerId={ownerId} activeView={activeView} onNavigate={setActiveView} />
+          )
         }
         sidebar={
           <Sidebar

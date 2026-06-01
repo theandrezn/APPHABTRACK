@@ -30,6 +30,7 @@ import type { AddOn, AddOnCategory } from '../types/addon'
 import { supabase } from '../lib/supabase'
 import { buildCheckoutUrl } from '../utils/stripeCheckout'
 import { Button } from './Button'
+import type { AppView } from '../types/navigation'
 
 const addOns: AddOn[] = [
   { id: 'travel-planner', name: 'Travel Planner', description: 'Plan trips, expenses and itinerary in one place.', category: 'Planners', price: 5, paymentLink: 'https://buy.stripe.com/4gM7sLcGp1Is3VQ4HF7N600', icon: Plane, featured: true, features: ['Trip overview', 'Daily itinerary', 'Travel budget', 'Packing checklist'] },
@@ -50,7 +51,12 @@ const categoryIcons = {
   Finance: Settings,
 } satisfies Record<AddOnCategory, AddOn['icon']>
 
-export function AppMenuBar() {
+type AppMenuBarProps = {
+  activeView?: AppView
+  onNavigate?: (view: AppView) => void
+}
+
+export function AppMenuBar({ activeView = 'dashboard', onNavigate }: AppMenuBarProps) {
   const [openCategory, setOpenCategory] = useState<AddOnCategory | null>(null)
   const [selected, setSelected] = useState<AddOn | null>(null)
   const [owned, setOwned] = useState<string[]>([])
@@ -109,7 +115,12 @@ export function AppMenuBar() {
         <div className="menubar-brand" aria-label="Habit Game">
           <img src="/habtrack-logo.png" alt="" />
         </div>
-        <button className="menubar-icon menubar-home is-active" type="button" aria-label="Dashboard">
+        <button
+          className={`menubar-icon menubar-home ${activeView === 'dashboard' ? 'is-active' : ''}`}
+          type="button"
+          aria-label="Dashboard"
+          onClick={() => onNavigate?.('dashboard')}
+        >
           <Home size={16} />
           <span>Dashboard</span>
         </button>
@@ -125,7 +136,7 @@ export function AppMenuBar() {
           <CalendarDays size={17} />
           <span>Calendar</span>
         </button>
-        <button className="menubar-icon" type="button" aria-label="Search add-ons" onClick={() => setSelected(addOns[0])}>
+        <button className="menubar-icon" type="button" aria-label="Search add-ons" onClick={() => onNavigate?.('addons')}>
           <Search size={17} />
           <span>Search</span>
         </button>
@@ -175,7 +186,12 @@ export function AppMenuBar() {
             )}
           </div>
         ))}
-        <button className="menubar-icon menubar-marketplace" type="button" aria-label="Open add-ons marketplace" onClick={() => setSelected(addOns[0])}>
+        <button
+          className={`menubar-icon menubar-marketplace ${activeView === 'addons' ? 'is-active' : ''}`}
+          type="button"
+          aria-label="Open add-ons marketplace"
+          onClick={() => onNavigate?.('addons')}
+        >
           <BadgeDollarSign size={17} />
           <span>Add-ons</span>
           <span>{addOns.length}</span>
